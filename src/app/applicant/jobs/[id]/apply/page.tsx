@@ -135,14 +135,11 @@ export default function JobApplicationPage({ params }: { params: Promise<{ id: s
 
     try {
       if (existingApplication) {
-        // Split out experiences from the rest of the form data
-        const { experiences, ...applicationData } = data;
-
-        // Update existing application (without experiences)
+        // Update existing application
         const { error: appError } = await updateApplication({
           id: existingApplication.id,
           job_id: id,
-          ...applicationData,
+          ...data,
         });
 
         if (appError) {
