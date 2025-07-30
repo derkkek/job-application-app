@@ -9,7 +9,7 @@ import { createClient } from "@/utils/supabase/client";
 const schema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(["Employer", "Applicant"]),
+  role: z.enum(["employer", "applicant"]),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -29,15 +29,31 @@ export default function RegisterPage() {
     setError("");
     setSuccess("");
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    
+    // First, sign up the user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
-      options: {
-        data: { role: data.role },
-      },
     });
-    if (error) setError(error.message);
-    else setSuccess("Registration successful! Check your email to confirm.");
+    
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+
+    if (authData.user) {
+      // Update the profile with the correct user type
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ user_type: data.role })
+        .eq('id', authData.user.id);
+      
+      if (profileError) {
+        setError(profileError.message);
+      } else {
+        setSuccess("Registration successful! Check your email to confirm.");
+      }
+    }
   };
 
   return (
@@ -60,8 +76,8 @@ export default function RegisterPage() {
           <label>Role</label>
           <select {...register("role")} className="w-full border p-2 rounded">
             <option value="">Select role</option>
-            <option value="Employer">Employer</option>
-            <option value="Applicant">Applicant</option>
+            <option value="employer">Employer</option>
+            <option value="applicant">Applicant</option>
           </select>
           {errors.role && <p className="text-red-500">{errors.role.message}</p>}
         </div>
