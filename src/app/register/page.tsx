@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 
 const schema = z.object({
+  first_name: z.string().min(1, "First name is required").max(100, "First name must be less than 100 characters"),
+  last_name: z.string().min(1, "Last name is required").max(100, "Last name must be less than 100 characters"),
   email: z.string().email(),
   password: z.string().min(6),
   role: z.enum(["employer", "applicant"]),
@@ -42,10 +44,14 @@ export default function RegisterPage() {
     }
 
     if (authData.user) {
-      // Update the profile with the correct user type
+      // Update the profile with the correct user type and names
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ user_type: data.role })
+        .update({ 
+          user_type: data.role,
+          first_name: data.first_name,
+          last_name: data.last_name
+        })
         .eq('id', authData.user.id);
       
       if (profileError) {
@@ -60,6 +66,18 @@ export default function RegisterPage() {
     <div className="max-w-md mx-auto mt-10 p-6 border rounded">
       <h1 className="text-2xl mb-4">Register</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <div>
+          <label>First Name</label>
+          <input type="text" {...register("first_name")}
+            className="w-full border p-2 rounded" />
+          {errors.first_name && <p className="text-red-500">{errors.first_name.message}</p>}
+        </div>
+        <div>
+          <label>Last Name</label>
+          <input type="text" {...register("last_name")}
+            className="w-full border p-2 rounded" />
+          {errors.last_name && <p className="text-red-500">{errors.last_name.message}</p>}
+        </div>
         <div>
           <label>Email</label>
           <input type="email" {...register("email")}
