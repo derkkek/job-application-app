@@ -136,10 +136,11 @@ export default function JobApplicationPage({ params }: { params: Promise<{ id: s
     try {
       if (existingApplication) {
         // Update existing application
+        const { experiences, ...applicationData } = data;
         const { error: appError } = await updateApplication({
           id: existingApplication.id,
           job_id: id,
-          ...data,
+          ...applicationData,
         });
 
         if (appError) {

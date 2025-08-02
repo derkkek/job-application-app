@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getEmployerJobs, deleteJob, getCountries } from "@/utils/jobs";
@@ -60,26 +61,38 @@ export default function EmployerJobsPage() {
   };
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">My Job Postings</h1>
+          <Link href="/employer/jobs/create">
+            <Button>Create Job</Button>
+          </Link>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">My Job Postings</h1>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900">My Job Postings</h1>
         <Link href="/employer/jobs/create">
-          <Button>Create New Job</Button>
+          <Button>Create Job</Button>
         </Link>
       </div>
-
+      
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           {error}
         </div>
       )}
 
       {jobs.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="bg-white rounded-lg shadow p-6 text-center">
           <p className="text-gray-500 mb-4">No job postings yet.</p>
           <Link href="/employer/jobs/create">
             <Button>Create Your First Job</Button>
@@ -88,7 +101,7 @@ export default function EmployerJobsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {jobs.map((job) => (
-            <div key={job.id} className="border rounded-lg p-4 shadow-sm">
+            <div key={job.id} className="bg-white border rounded-lg p-4 shadow-sm">
               <h3 className="text-lg font-semibold mb-2">{job.title}</h3>
               <p className="text-gray-600 mb-2">{getCountryName(job.location_country_id)}</p>
               <p className="text-sm text-gray-500 mb-2">

@@ -8,7 +8,7 @@ import {
   UpdateExperienceData,
   ApplicationWithExperiences
 } from '@/types/application';
-import { isApplicant } from '@/utils/auth';
+import { isApplicant, isEmployer } from '@/utils/auth';
 
 // Clear any cached queries and create a fresh client
 function getFreshClient() {
@@ -322,4 +322,37 @@ export async function deleteExperience(id: string): Promise<{ error: any }> {
     .eq('id', id);
 
   return { error };
+} 
+
+// Get applicants for employer's job postings
+export async function getEmployerApplicants(): Promise<{ data: any[] | null; error: any }> {
+  const supabase = getFreshClient();
+  
+  // Check if user is an employer
+  const userIsEmployer = await isEmployer();
+  if (!userIsEmployer) {
+    return { data: null, error: 'Only employers can view applicants' };
+  }
+  
+  // Get current user
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    return { data: null, error: 'User not authenticated' };
+  }
+
+  const { data, error } = await supabase
+    .from('job_applications')
+    .select(`
+      *,
+      job_postings!job_applications_job_id_fkey(
+        id,
+        title,
+        employer_id,
+        countries!job_postings_location_country_id_fkey(name)
+      )
+    `)
+    .eq('job_postings.employer_id', user.id)
+    .order('created_at', { ascending: false });
+
+  return { data, error };
 } 

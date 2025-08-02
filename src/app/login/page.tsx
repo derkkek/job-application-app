@@ -15,6 +15,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -25,13 +26,30 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     setError("");
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
-    if (error) setError(error.message);
-    else window.location.href = "/";
+    setIsLoading(true);
+    
+    try {
+      const supabase = createClient();
+      console.log('Attempting to sign in with:', data.email);
+      
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+      
+      if (error) {
+        console.error('Sign in error:', error);
+        setError(error.message);
+      } else {
+        console.log('Sign in successful');
+        window.location.href = "/";
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -50,7 +68,9 @@ export default function LoginPage() {
             className="w-full border p-2 rounded" />
           {errors.password && <p className="text-red-500">{errors.password.message}</p>}
         </div>
-        <Button type="submit" disabled={isSubmitting}>Login</Button>
+        <Button type="submit" disabled={isSubmitting || isLoading}>
+          {isLoading ? "Signing in..." : "Login"}
+        </Button>
         {error && <p className="text-red-500">{error}</p>}
       </form>
     </div>

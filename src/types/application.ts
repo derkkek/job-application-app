@@ -38,7 +38,7 @@ export interface CreateApplicationData {
   email: string;
   salary_expectation: number;
   additional_expectations?: string;
-  experiences?: JobApplicationExperience[]; // Add this line
+  experiences?: JobApplicationExperience[];
 }
 
 export interface UpdateApplicationData extends CreateApplicationData {
