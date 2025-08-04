@@ -41,8 +41,15 @@ export interface CreateApplicationData {
   experiences?: JobApplicationExperience[];
 }
 
-export interface UpdateApplicationData extends CreateApplicationData {
+export interface UpdateApplicationData {
   id: string;
+  first_name: string;
+  last_name: string;
+  country_id: number;
+  phone_number: string;
+  email: string;
+  salary_expectation: number;
+  additional_expectations?: string;
 }
 
 export interface CreateExperienceData {

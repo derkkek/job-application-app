@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useSignOut } from "@/hooks/use-auth";
 import { 
   Briefcase, 
   FileText, 
@@ -21,6 +22,7 @@ interface SidebarProps {
 
 export function Sidebar({ userType, userName, userEmail }: SidebarProps) {
   const pathname = usePathname();
+  const signOutMutation = useSignOut();
 
   const employerLinks = [
     {
@@ -59,6 +61,10 @@ export function Sidebar({ userType, userName, userEmail }: SidebarProps) {
   ];
 
   const links = userType === 'employer' ? employerLinks : applicantLinks;
+
+  const handleLogout = () => {
+    signOutMutation.mutate();
+  };
 
   return (
     <div className="flex h-screen w-64 flex-col bg-gray-50 border-r border-gray-200">
@@ -125,13 +131,11 @@ export function Sidebar({ userType, userName, userEmail }: SidebarProps) {
         <Button
           variant="outline"
           className="w-full justify-start space-x-3"
-          onClick={() => {
-            // TODO: Implement logout functionality
-            console.log('Logout clicked');
-          }}
+          onClick={handleLogout}
+          disabled={signOutMutation.isPending}
         >
           <LogOut className="w-5 h-5" />
-          <span>Logout</span>
+          <span>{signOutMutation.isPending ? 'Signing out...' : 'Logout'}</span>
         </Button>
       </div>
     </div>

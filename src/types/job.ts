@@ -1,9 +1,15 @@
 export interface Job {
   id: string;
   title: string;
+  company?: string;
+  location?: string;
+  description?: string;
   location_country_id: number;
   work_location: 'onsite' | 'remote' | 'hybrid';
   requirements: string;
+  salary_min?: number;
+  salary_max?: number;
+  job_type?: string;
   employer_id: string;
   is_published: boolean;
   created_at: string;
@@ -15,6 +21,12 @@ export interface CreateJobData {
   location_country_id: number;
   work_location: 'onsite' | 'remote' | 'hybrid';
   requirements: string;
+  company?: string;
+  location?: string;
+  description?: string;
+  salary_min?: number;
+  salary_max?: number;
+  job_type?: string;
 }
 
 export interface UpdateJobData extends CreateJobData {

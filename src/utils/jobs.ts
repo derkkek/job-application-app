@@ -2,6 +2,41 @@ import { createClient } from '@/utils/supabase/client';
 import { Job, CreateJobData, UpdateJobData, Country } from '@/types/job';
 import { isEmployer } from '@/utils/auth';
 
+// Unified function to get jobs based on user type
+export async function getJobs(userType?: "employer" | "applicant"): Promise<{ data: Job[] | null; error: any }> {
+  const supabase = createClient();
+  
+  if (userType === "employer") {
+    // Get employer's own jobs
+    const userIsEmployer = await isEmployer();
+    if (!userIsEmployer) {
+      return { data: null, error: 'Only employers can view their job postings' };
+    }
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return { data: null, error: 'User not authenticated' };
+    }
+
+    const { data, error } = await supabase
+      .from('job_postings')
+      .select('*')
+      .eq('employer_id', user.id)
+      .order('created_at', { ascending: false });
+
+    return { data, error };
+  } else {
+    // Get all published jobs for applicants
+    const { data, error } = await supabase
+      .from('job_postings')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false });
+
+    return { data, error };
+  }
+}
+
 export async function createJob(jobData: CreateJobData): Promise<{ data: Job | null; error: any }> {
   const supabase = createClient();
   
@@ -65,7 +100,7 @@ export async function getJobById(id: string): Promise<{ data: Job | null; error:
   return { data, error };
 }
 
-export async function updateJob(jobData: UpdateJobData): Promise<{ data: Job | null; error: any }> {
+export async function updateJob(id: string, jobData: UpdateJobData): Promise<{ data: Job | null; error: any }> {
   const supabase = createClient();
   
   // Check if user is an employer
@@ -88,7 +123,7 @@ export async function updateJob(jobData: UpdateJobData): Promise<{ data: Job | n
       work_location: jobData.work_location,
       requirements: jobData.requirements,
     })
-    .eq('id', jobData.id)
+    .eq('id', id)
     .eq('employer_id', user.id) // Ensure user owns the job
     .select()
     .single();

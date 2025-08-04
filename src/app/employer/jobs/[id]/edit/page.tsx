@@ -76,7 +76,7 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
     setError("");
     setIsSubmitting(true);
     
-    const { data: job, error } = await updateJob({
+    const { data: job, error } = await updateJob(id, {
       id: id,
       ...data,
     });

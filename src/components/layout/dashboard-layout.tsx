@@ -1,56 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Sidebar } from "@/components/ui/sidebar";
-import { getCurrentUserProfile } from "@/utils/auth";
-import { UserProfile } from "@/utils/auth";
+import { useCurrentUser } from "@/hooks/use-auth";
+import { LoadingSpinner } from "@/components/atoms/loading-spinner";
+import { ErrorMessage } from "@/components/atoms/error-message";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: userProfile, error, isLoading } = useCurrentUser();
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data, error } = await getCurrentUserProfile();
-        
-        if (error || !data) {
-          // Redirect to login if not authenticated
-          router.push('/login');
-          return;
-        }
+    if (error && !isLoading) {
+      router.push('/login');
+    }
+  }, [error, isLoading, router]);
 
-        setUserProfile(data);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        router.push('/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
-        </div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
-  if (!userProfile) {
-    return null; // Will redirect to login
+  if (error || !userProfile) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <ErrorMessage message="Authentication failed. Redirecting to login..." />
+        </div>
+      </div>
+    );
   }
 
   const userName = userProfile.first_name && userProfile.last_name 

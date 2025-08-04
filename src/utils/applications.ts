@@ -15,6 +15,52 @@ function getFreshClient() {
   return createClient();
 }
 
+// Unified function to get applications based on user type
+export async function getApplications(userType?: "employer" | "applicant"): Promise<{ data: ApplicationWithExperiences[] | null; error: any }> {
+  if (userType === "employer") {
+    return getEmployerApplicants();
+  } else {
+    return getApplicantApplications();
+  }
+}
+
+// Get a specific application by ID
+export async function getApplicationById(id: string): Promise<{ data: ApplicationWithExperiences | null; error: any }> {
+  const supabase = getFreshClient();
+  
+  const { data, error } = await supabase
+    .from('job_applications')
+    .select(`
+      *,
+      job_postings!job_applications_job_id_fkey(
+        id,
+        title,
+        countries!job_postings_location_country_id_fkey(name)
+      )
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error || !data) {
+    return { data: null, error };
+  }
+
+  // Get experiences for this application
+  const { data: experiences, error: expError } = await getApplicationExperiences(data.id);
+  
+  if (expError) {
+    console.error('Error fetching experiences:', expError);
+  }
+
+  // Combine application with experiences
+  const applicationWithExperiences: ApplicationWithExperiences = {
+    ...data,
+    experiences: experiences || [],
+  };
+
+  return { data: applicationWithExperiences, error: null };
+}
+
 // Get all available jobs (published jobs)
 export async function getAvailableJobs(): Promise<{ data: any[] | null; error: any }> {
   const supabase = getFreshClient();
@@ -141,26 +187,6 @@ export async function getApplicantApplications(): Promise<{ data: ApplicationWit
   return { data, error };
 }
 
-// Get a specific application by ID
-export async function getApplicationById(id: string): Promise<{ data: ApplicationWithExperiences | null; error: any }> {
-  const supabase = getFreshClient();
-  
-  const { data, error } = await supabase
-    .from('job_applications')
-    .select(`
-      *,
-      job_postings!job_applications_job_id_fkey(
-        id,
-        title,
-        countries!job_postings_location_country_id_fkey(name)
-      )
-    `)
-    .eq('id', id)
-    .single();
-
-  return { data, error };
-}
-
 // Get experiences for an application
 export async function getApplicationExperiences(applicationId: string): Promise<{ data: JobApplicationExperience[] | null; error: any }> {
   const supabase = getFreshClient();
@@ -220,7 +246,7 @@ export async function getApplicationByJobIdWithExperiences(jobId: string): Promi
 }
 
 // Update a job application
-export async function updateApplication(applicationData: UpdateApplicationData): Promise<{ data: JobApplication | null; error: any }> {
+export async function updateApplication(id: string, applicationData: UpdateApplicationData): Promise<{ data: JobApplication | null; error: any }> {
   const supabase = getFreshClient();
   
   // Check if user is an applicant
@@ -246,7 +272,7 @@ export async function updateApplication(applicationData: UpdateApplicationData):
       salary_expectation: applicationData.salary_expectation,
       additional_expectations: applicationData.additional_expectations,
     })
-    .eq('id', applicationData.id)
+    .eq('id', id)
     .eq('applicant_id', user.id) // Ensure user owns the application
     .select()
     .single();

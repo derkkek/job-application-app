@@ -37,4 +37,11 @@ export async function isEmployer(): Promise<boolean> {
 export async function isApplicant(): Promise<boolean> {
   const { data: profile } = await getCurrentUserProfile();
   return profile?.user_type === 'applicant';
+}
+
+export async function signOut(): Promise<{ error: any }> {
+  const supabase = createClient();
+  
+  const { error } = await supabase.auth.signOut();
+  return { error };
 } 
