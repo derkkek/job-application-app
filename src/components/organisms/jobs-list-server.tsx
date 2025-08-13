@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { getJobsServer } from "@/utils/jobs-server";
-import { JobsListClient } from "./jobs-list-client";
+import { JobsListClient } from "@/components/organisms/jobs-list-client";
 import { JobCardSkeleton } from "@/components/atoms/loading-skeleton";
 
 interface JobsListServerProps {

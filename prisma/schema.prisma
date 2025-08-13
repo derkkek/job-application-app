@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model profiles {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  first_name String?
+  last_name  String?
+  user_type  String   // 'employer' | 'applicant'
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  job_postings     job_postings[]     @relation("EmployerJobs")
+  job_applications job_applications[] @relation("ApplicantApplications")
+
+  @@map("profiles")
+}
+
+model countries {
+  id   Int    @id @default(autoincrement())
+  name String
+  code String
+
+  // Relations
+  job_postings     job_postings[]     @relation("JobCountry")
+  job_applications job_applications[] @relation("ApplicationCountry")
+
+  @@map("countries")
+}
+
+model job_postings {
+  id                    String   @id @default(uuid())
+  title                 String
+  company               String?
+  location              String?
+  description           String?
+  location_country_id   Int
+  work_location         String   // 'onsite' | 'remote' | 'hybrid'
+  requirements          String
+  salary_min            Int?
+  salary_max            Int?
+  job_type              String?
+  employer_id           String
+  is_published          Boolean  @default(false)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  // Relations
+  employer         profiles           @relation("EmployerJobs", fields: [employer_id], references: [id], onDelete: Cascade)
+  country          countries          @relation("JobCountry", fields: [location_country_id], references: [id])
+  job_applications job_applications[]
+
+  @@map("job_postings")
+}
+
+model job_applications {
+  id                      String   @id @default(uuid())
+  job_id                  String
+  applicant_id            String
+  first_name              String
+  last_name               String
+  country_id              Int
+  phone_number            String
+  email                   String
+  salary_expectation      Int
+  additional_expectations String?
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  // Relations
+  job                             job_postings                      @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  applicant                       profiles                          @relation("ApplicantApplications", fields: [applicant_id], references: [id], onDelete: Cascade)
+  country                         countries                         @relation("ApplicationCountry", fields: [country_id], references: [id])
+  job_application_experiences     job_application_experiences[]
+
+  @@unique([job_id, applicant_id])
+  @@map("job_applications")
+}
+
+model job_application_experiences {
+  id             String   @id @default(uuid())
+  application_id String
+  position       String
+  start_date     String
+  end_date       String?
+  still_working  Boolean  @default(false)
+  summary        String?
+  created_at     DateTime @default(now())
+
+  // Relations
+  application job_applications @relation(fields: [application_id], references: [id], onDelete: Cascade)
+
+  @@map("job_application_experiences")
+}
