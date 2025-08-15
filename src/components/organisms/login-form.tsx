@@ -7,7 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 // Remove toast import since sonner is not installed
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
+// Remove Button import - we'll use a regular HTML button instead
 import { createClient } from "@/utils/supabase/client";
 
 const loginSchema = z.object({
@@ -105,9 +105,13 @@ export default function LoginForm() {
         )}
       </div>
       
-      <Button type="submit" disabled={isLoadingSignIn}>
+      <button 
+        type="submit" 
+        disabled={isLoadingSignIn}
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
         {isLoadingSignIn ? 'Signing in...' : 'Login'}
-      </Button>
+      </button>
       
       {error && (
         <p className="text-red-500 text-sm">
