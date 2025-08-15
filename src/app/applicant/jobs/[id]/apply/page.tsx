@@ -30,7 +30,25 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
   const { data: countries } = await getCountriesAction();
 
   // Check if application already exists
-  const { data: existingApplication } = await getApplicationByJobAndApplicantAction(id, userProfile.id);
+  const { data: existingApplicationData } = await getApplicationByJobAndApplicantAction(id, userProfile.id);
+
+  // Convert null values to undefined and Date objects to strings to match the expected type
+  const existingApplication = existingApplicationData ? {
+    ...existingApplicationData,
+    created_at: existingApplicationData.created_at instanceof Date 
+      ? existingApplicationData.created_at.toISOString() 
+      : existingApplicationData.created_at,
+    updated_at: existingApplicationData.updated_at instanceof Date 
+      ? existingApplicationData.updated_at.toISOString() 
+      : existingApplicationData.updated_at,
+    additional_expectations: existingApplicationData.additional_expectations ?? undefined,
+    job_application_experiences: existingApplicationData.job_application_experiences.map(exp => ({
+      ...exp,
+      created_at: exp.created_at instanceof Date ? exp.created_at.toISOString() : exp.created_at,
+      end_date: exp.end_date ?? undefined,
+      summary: exp.summary ?? undefined,
+    }))
+  } : undefined;
 
   return (
     <ApplyJobForm 
@@ -41,4 +59,4 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
       applicantId={userProfile.id}
     />
   );
-} 
+}
