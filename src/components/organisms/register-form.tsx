@@ -33,33 +33,42 @@ export function RegisterForm() {
     setSuccess("");
     const supabase = createClient();
     
-    // First, sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-    });
-    
-    if (authError) {
-      setError(authError.message);
-      return;
-    }
-
-    if (authData.user) {
-      // Update the profile with the correct user type and names
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          user_type: data.role,
-          first_name: data.first_name,
-          last_name: data.last_name
-        })
-        .eq('id', authData.user.id);
+    try {
+      // First, sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+      });
       
-      if (profileError) {
-        setError(profileError.message);
-      } else {
-        setSuccess("Registration successful! Check your email to confirm.");
+      if (authError) {
+        setError(authError.message);
+        return;
       }
+
+      if (authData.user) {
+        // Insert the profile (not update) since it doesn't exist yet
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({ 
+            id: authData.user.id,  // Important: set the ID explicitly
+            email: data.email,
+            user_type: data.role,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          setError(`Profile creation failed: ${profileError.message}`);
+        } else {
+          setSuccess("Registration successful! Check your email to confirm your account.");
+        }
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError('An unexpected error occurred during registration.');
     }
   };
 
