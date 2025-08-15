@@ -1,14 +1,16 @@
 import { Suspense } from "react";
-import { getJobsServer } from "@/utils/jobs-server";
+import { getJobsAction } from "@/actions/jobs";
 import { JobsListClient } from "@/components/organisms/jobs-list-client";
 import { JobCardSkeleton } from "@/components/atoms/loading-skeleton";
+import type { Job } from "@/types/job";
 
 interface JobsListServerProps {
   userType?: "employer" | "applicant";
+  employerId?: string;
 }
 
-async function JobsListContent({ userType }: JobsListServerProps) {
-  const { data: jobs, error } = await getJobsServer(userType);
+async function JobsListContent({ userType, employerId }: JobsListServerProps) {
+  const { data: jobs, error } = await getJobsAction(userType, employerId);
 
   if (error) {
     throw new Error(error.message);
@@ -27,10 +29,10 @@ function JobsListSkeleton() {
   );
 }
 
-export function JobsListServer({ userType }: JobsListServerProps) {
+export function JobsListServer({ userType, employerId }: JobsListServerProps) {
   return (
     <Suspense fallback={<JobsListSkeleton />}>
-      <JobsListContent userType={userType} />
+      <JobsListContent userType={userType} employerId={employerId} />
     </Suspense>
   );
 } 

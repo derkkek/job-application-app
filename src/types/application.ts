@@ -67,7 +67,7 @@ export interface UpdateExperienceData extends CreateExperienceData {
 
 export interface ApplicationWithExperiences extends JobApplication {
   experiences: JobApplicationExperience[];
-  job_postings?: {
+  job?: {
     id: string;
     title: string;
     countries?: {

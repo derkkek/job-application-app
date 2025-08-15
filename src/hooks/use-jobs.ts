@@ -37,7 +37,13 @@ export function useCreateJob() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: CreateJobData) => createJob(data),
+    mutationFn: async (data: CreateJobData) => {
+      const response = await createJob(data);
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to create job');
+      }
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobKeys.lists() });
     },
@@ -49,8 +55,13 @@ export function useUpdateJob() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateJobData }) => 
-      updateJob(id, data),
+    mutationFn: async ({ id, data }: { id: string; data: UpdateJobData }) => {
+      const response = await updateJob(id, data);
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to update job');
+      }
+      return response.data;
+    },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: jobKeys.lists() });
       queryClient.invalidateQueries({ queryKey: jobKeys.detail(id) });
@@ -63,7 +74,13 @@ export function useDeleteJob() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (id: string) => deleteJob(id),
+    mutationFn: async (id: string) => {
+      const response = await deleteJob(id);
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to delete job');
+      }
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: jobKeys.lists() });
     },

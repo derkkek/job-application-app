@@ -1,47 +1,29 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { getCurrentUserProfile } from "@/utils/auth";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  const router = useRouter();
+export default async function Home() {
+  try {
+    const { data: profile, error } = await getCurrentUserProfile();
+    
+    if (error || !profile) {
+      // Not authenticated, redirect to login
+      redirect('/login');
+    }
 
-  useEffect(() => {
-    const checkUserAndRedirect = async () => {
-      try {
-        const { data: profile, error } = await getCurrentUserProfile();
-        
-        if (error || !profile) {
-          // Not authenticated, redirect to login
-          router.push('/login');
-          return;
-        }
+    // Redirect based on user type
+    if (profile.user_type === 'employer') {
+      redirect('/employer/jobs');
+    } else if (profile.user_type === 'applicant') {
+      redirect('/applicant/jobs');
+    } else {
+      // Unknown user type, redirect to login
+      redirect('/login');
+    }
+  } catch (error) {
+    console.error('Error checking user:', error);
+    redirect('/login');
+  }
 
-        // Redirect based on user type
-        if (profile.user_type === 'employer') {
-          router.push('/employer/jobs');
-        } else if (profile.user_type === 'applicant') {
-          router.push('/applicant/jobs');
-        } else {
-          // Unknown user type, redirect to login
-          router.push('/login');
-        }
-      } catch (error) {
-        console.error('Error checking user:', error);
-        router.push('/login');
-      }
-    };
-
-    checkUserAndRedirect();
-  }, [router]);
-
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600">Loading...</p>
-      </div>
-    </div>
-  );
+  // This should never be reached due to redirects
+  return null;
 }

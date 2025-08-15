@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/client';
+import { UserModel } from '@/models/user';
 
 export interface UserProfile {
   id: string;
@@ -13,20 +14,15 @@ export interface UserProfile {
 export async function getCurrentUserProfile(): Promise<{ data: UserProfile | null; error: any }> {
   const supabase = createClient();
   
-  // Get current user
+  // Get current user from Supabase auth
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) {
     return { data: null, error: 'User not authenticated' };
   }
 
-  // Get user profile
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  return { data, error };
+  // Get user profile from Prisma
+  const result = await UserModel.getById(user.id);
+  return result;
 }
 
 export async function isEmployer(): Promise<boolean> {

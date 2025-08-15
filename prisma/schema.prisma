@@ -2,6 +2,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum WorkLocation {
+  onsite
+  remote
+  hybrid
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
@@ -43,7 +49,7 @@ model job_postings {
   location              String?
   description           String?
   location_country_id   Int
-  work_location         String   // 'onsite' | 'remote' | 'hybrid'
+  work_location         WorkLocation
   requirements          String
   salary_min            Int?
   salary_max            Int?
@@ -56,7 +62,7 @@ model job_postings {
   // Relations
   employer         profiles           @relation("EmployerJobs", fields: [employer_id], references: [id], onDelete: Cascade)
   country          countries          @relation("JobCountry", fields: [location_country_id], references: [id])
-  job_applications job_applications[]
+  job_applications job_applications[] @relation("JobApplications")
 
   @@map("job_postings")
 }
@@ -76,7 +82,7 @@ model job_applications {
   updated_at              DateTime @updatedAt
 
   // Relations
-  job                             job_postings                      @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  job                             job_postings                      @relation("JobApplications", fields: [job_id], references: [id], onDelete: Cascade)
   applicant                       profiles                          @relation("ApplicantApplications", fields: [applicant_id], references: [id], onDelete: Cascade)
   country                         countries                         @relation("ApplicationCountry", fields: [country_id], references: [id])
   job_application_experiences     job_application_experiences[]

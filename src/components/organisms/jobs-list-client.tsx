@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useDeleteJob } from "@/hooks/use-jobs";
 import { Job } from "@/types/job";
 import { Trash2, Edit, Eye } from "lucide-react";
+import { formatCurrency, getWorkLocationDisplay } from "@/lib/utils";
 
 interface JobsListClientProps {
   jobs: Job[];
@@ -12,11 +13,15 @@ interface JobsListClientProps {
 }
 
 export function JobsListClient({ jobs, userType }: JobsListClientProps) {
-  const deleteJobMutation = useDeleteJob();
+  const {
+    mutate: serverDeleteJob,
+    isPending: isLoadingDeleteJob,
+    error: deleteJobError,
+  } = useDeleteJob();
 
   const handleDeleteJob = (id: string) => {
     if (confirm("Are you sure you want to delete this job?")) {
-      deleteJobMutation.mutate(id);
+      serverDeleteJob(id);
     }
   };
 
@@ -52,7 +57,7 @@ export function JobsListClient({ jobs, userType }: JobsListClientProps) {
               <div className="flex items-center gap-4 mt-4">
                 {job.salary_min && job.salary_max && (
                   <span className="text-sm text-gray-500">
-                    Salary: ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}
+                    Salary: {formatCurrency(job.salary_min)} - {formatCurrency(job.salary_max)}
                   </span>
                 )}
                 {job.job_type && (
@@ -61,9 +66,7 @@ export function JobsListClient({ jobs, userType }: JobsListClientProps) {
                   </span>
                 )}
                 <span className="text-sm text-gray-500">
-                  {job.work_location === 'onsite' ? 'On-site' : 
-                   job.work_location === 'remote' ? 'Remote' : 
-                   job.work_location === 'hybrid' ? 'Hybrid' : job.work_location}
+                  {getWorkLocationDisplay(job.work_location)}
                 </span>
               </div>
             </div>
@@ -87,10 +90,10 @@ export function JobsListClient({ jobs, userType }: JobsListClientProps) {
                     variant="outline"
                     size="sm"
                     onClick={() => handleDeleteJob(job.id)}
-                    disabled={deleteJobMutation.isPending}
+                    disabled={isLoadingDeleteJob}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
-                    Delete
+                    {isLoadingDeleteJob ? 'Deleting...' : 'Delete'}
                   </Button>
                 </>
               ) : (

@@ -1,19 +1,31 @@
 export interface Job {
   id: string;
   title: string;
-  company?: string;
-  location?: string;
-  description?: string;
+  company: string | null;
+  location: string | null;
+  description: string | null;
   location_country_id: number;
   work_location: 'onsite' | 'remote' | 'hybrid';
   requirements: string;
-  salary_min?: number;
-  salary_max?: number;
-  job_type?: string;
+  salary_min: number | null;
+  salary_max: number | null;
+  job_type: string | null;
   employer_id: string;
   is_published: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
+  // Related data
+  country?: {
+    id: number;
+    name: string;
+    code: string;
+  };
+  employer?: {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string;
+  };
 }
 
 export interface CreateJobData {
