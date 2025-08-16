@@ -2,10 +2,11 @@ import { Suspense } from "react";
 import { getCurrentUserProfile } from "@/utils/auth";
 import { ApplicationsListClient } from "@/components/organisms/applications-list-client";
 import { LoadingSpinner } from "@/components/atoms/loading-spinner";
+import { getCurrentUserProfileServer } from "@/utils/auth-server";
 
 export default async function EmployerApplicantsPage() {
   // Get current user profile to determine employer ID
-  const { data: userProfile, error: profileError } = await getCurrentUserProfile();
+  const { data: userProfile, error: profileError } = await getCurrentUserProfileServer();
   
   if (profileError || !userProfile) {
     return (

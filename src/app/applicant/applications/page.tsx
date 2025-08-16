@@ -3,10 +3,11 @@ import { getApplicationsAction } from "@/actions/applications";
 import { ApplicationsListClient } from "@/components/organisms/applications-list-client";
 import { LoadingSpinner } from "@/components/atoms/loading-spinner";
 import { getCurrentUserProfile } from "@/utils/auth";
+import { getCurrentUserProfileServer } from "@/utils/auth-server";
 
 export default async function ApplicantApplicationsPage() {
   // Get current user profile to determine user ID
-  const { data: userProfile, error: profileError } = await getCurrentUserProfile();
+  const { data: userProfile, error: profileError } = await getCurrentUserProfileServer();
   
   if (profileError || !userProfile) {
     return (
