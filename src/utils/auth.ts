@@ -11,18 +11,24 @@ export interface UserProfile {
   updated_at: string;
 }
 
+// Client-side version
 export async function getCurrentUserProfile(): Promise<{ data: UserProfile | null; error: any }> {
   const supabase = createClient();
   
-  // Get current user from Supabase auth
+  // Get current user from Supabase auth (client-side)
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) {
     return { data: null, error: 'User not authenticated' };
   }
 
-  // Get user profile from Prisma
-  const result = await UserModel.getById(user.id);
-  return result;
+  // For client-side, we'll fetch from API route instead of direct Prisma
+  try {
+    const response = await fetch('/api/auth/profile');
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    return { data: null, error: 'Failed to fetch profile' };
+  }
 }
 
 export async function isEmployer(): Promise<boolean> {
@@ -40,4 +46,4 @@ export async function signOut(): Promise<{ error: any }> {
   
   const { error } = await supabase.auth.signOut();
   return { error };
-} 
+}
