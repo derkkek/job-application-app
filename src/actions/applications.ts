@@ -38,6 +38,14 @@ export async function getApplicationByJobAndApplicantAction(jobId: string, appli
 
 export async function createApplicationAction(data: CreateApplicationData, applicantId: string) {
   try {
+    // Check if user is an applicant
+    const { isApplicant } = await import('@/utils/auth');
+    const userIsApplicant = await isApplicant();
+    
+    if (!userIsApplicant) {
+      return { data: null, error: { message: 'Unauthorized: Only applicants can apply for jobs' } };
+    }
+
     const result = await ApplicationModel.create(data, applicantId)
     if (result.data) {
       revalidatePath('/applicant/applications')

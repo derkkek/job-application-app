@@ -24,6 +24,14 @@ export async function getJobByIdAction(id: string) {
 
 export async function createJobAction(data: CreateJobData, employerId: string) {
   try {
+    // Check if user is an employer
+    const { isEmployer } = await import('@/utils/auth');
+    const userIsEmployer = await isEmployer();
+    
+    if (!userIsEmployer) {
+      return { data: null, error: { message: 'Unauthorized: Only employers can create jobs' } };
+    }
+
     const result = await JobModel.create(data, employerId)
     if (result.data) {
       revalidatePath('/employer/jobs')

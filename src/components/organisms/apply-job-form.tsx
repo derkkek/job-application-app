@@ -10,6 +10,7 @@ import { Country } from "@/types/job";
 import { JobApplicationExperience } from "@/types/application";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useCurrentUser } from "@/hooks/use-auth";
 
 // Schema for experience form
 const experienceSchema = z.object({
@@ -92,6 +93,16 @@ export function ApplyJobForm({ jobId, job, countries, existingApplication, appli
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { data: user } = useCurrentUser();
+
+  // Prevent employers from applying
+  if (user?.user_type === 'employer') {
+    return (
+      <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+        Employers cannot apply for jobs. Please switch to an applicant account if you wish to apply.
+      </div>
+    );
+  }
 
   const {
     register,

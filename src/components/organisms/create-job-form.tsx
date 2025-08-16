@@ -8,6 +8,7 @@ import { createJobAction } from "@/actions/jobs";
 import { Country } from "@/types/job";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
+import { useCurrentUser } from "@/hooks/use-auth";
 
 const schema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
@@ -24,6 +25,16 @@ interface CreateJobFormProps {
 
 export function CreateJobForm({ countries }: CreateJobFormProps) {
   const router = useRouter();
+  const { data: user } = useCurrentUser();
+
+  // Prevent applicants from creating jobs
+  if (user?.user_type === 'applicant') {
+    return (
+      <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+        Applicants cannot create job postings. Please switch to an employer account if you wish to post jobs.
+      </div>
+    );
+  }
   
   const {
     register,
