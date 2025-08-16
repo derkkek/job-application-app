@@ -16,7 +16,13 @@ async function JobsListContent({ userType, employerId }: JobsListServerProps) {
     throw new Error(error.message);
   }
 
-  return <JobsListClient jobs={jobs || []} userType={userType} />;
+  // Type assertion to fix the work_location type mismatch
+  const typedJobs = (jobs || []).map(job => ({
+    ...job,
+    work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
+  })) as Job[];
+
+  return <JobsListClient jobs={typedJobs} userType={userType} />;
 }
 
 function JobsListSkeleton() {
@@ -35,4 +41,4 @@ export function JobsListServer({ userType, employerId }: JobsListServerProps) {
       <JobsListContent userType={userType} employerId={employerId} />
     </Suspense>
   );
-} 
+}

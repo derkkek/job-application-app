@@ -8,6 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+
 model profiles {
   id               String             @id @default(uuid())
   email            String             @unique
