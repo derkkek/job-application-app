@@ -1,6 +1,6 @@
 import { getJobByIdAction, getCountriesAction } from "@/actions/jobs";
 import { getApplicationByJobAndApplicantAction } from "@/actions/applications";
-import { getCurrentUserProfile } from "@/utils/auth";
+import { getCurrentUserProfileServer } from "@/utils/auth-server";
 import { ApplyJobForm } from "@/components/organisms/apply-job-form";
 import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
@@ -13,9 +13,10 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
   const { id } = await params;
   
   // Get current user profile to get applicant ID
-  const { data: userProfile, error: profileError } = await getCurrentUserProfile();
+const { data: userProfile, error: profileError } = await getCurrentUserProfileServer();
   
   if (profileError || !userProfile) {
+    console.log("profile error");
     redirect('/login');
   }
 
@@ -53,7 +54,10 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
   return (
     <ApplyJobForm 
       jobId={id}
-      job={job} 
+      job={{
+          ...job,
+          work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
+        }}  
       countries={countries || []} 
       existingApplication={existingApplication}
       applicantId={userProfile.id}

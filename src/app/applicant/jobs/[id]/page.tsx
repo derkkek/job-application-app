@@ -42,7 +42,13 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
         </div>
       </div>
 
-      <JobDetailsClient job={job} countries={countries || []} />
+      <JobDetailsClient 
+        job={{
+          ...job,
+          work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
+        }} 
+        countries={countries || []} 
+      />
     </div>
   );
 } 

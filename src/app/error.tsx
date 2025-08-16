@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button } from "@/components/ui/client-button";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -30,22 +29,21 @@ export default function Error({ error, reset }: ErrorProps) {
         </p>
         
         <div className="space-y-3">
-          <Button
+          <button
             onClick={reset}
-            className="w-full"
-            variant="default"
+            className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             Try again
-          </Button>
+          </button>
           
-          <Button
+          <button
             onClick={() => window.location.href = "/"}
-            className="w-full"
-            variant="outline"
+            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
+            <Home className="w-4 h-4 mr-2" />
             Go to homepage
-          </Button>
+          </button>
         </div>
         
         {error.digest && (

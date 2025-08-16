@@ -1,5 +1,6 @@
+"use client";
+
 import Link from "next/link";
-import { Button } from "@/components/ui/client-button";
 import { Home, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
@@ -19,21 +20,20 @@ export default function NotFound() {
         </p>
         
         <div className="space-y-3">
-          <Link href="/">
-            <Button className="w-full">
+          <Link href="/" className="block">
+            <button className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               <Home className="w-4 h-4 mr-2" />
               Go to Homepage
-            </Button>
+            </button>
           </Link>
           
-          <Button
-            variant="outline"
-            className="w-full"
+          <button
             onClick={() => window.history.back()}
+            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Go Back
-          </Button>
+          </button>
         </div>
       </div>
     </div>

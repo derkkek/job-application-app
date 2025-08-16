@@ -70,7 +70,7 @@ export class JobModel {
         data: {
           ...data,
           employer_id: employerId,
-          is_published: false
+          is_published: true
         },
         include: {
           country: true

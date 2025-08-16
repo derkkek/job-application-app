@@ -1,4 +1,3 @@
-// src/utils/auth-server.ts (Debug Version)
 import { createClient } from '@/utils/supabase/server';
 import { UserModel } from '@/models/user';
 import type { UserProfile } from '@/types/user';
