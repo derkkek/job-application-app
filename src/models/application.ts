@@ -17,7 +17,7 @@ export class ApplicationModel {
       
       if (userType === "employer") {
         // For employers, get applications for their jobs
-        where.job_postings = {
+        where.job = {
           employer_id: userId
         }
       } else if (userType === "applicant") {
