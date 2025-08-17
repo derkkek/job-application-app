@@ -2,6 +2,7 @@
 
 import { ApplicationModel } from '@/models/application'
 import { revalidatePath } from 'next/cache'
+import { getCurrentUserProfileServer } from '@/utils/auth-server' // Use server-side auth
 import type { 
   CreateApplicationData, 
   UpdateApplicationData,
@@ -38,12 +39,21 @@ export async function getApplicationByJobAndApplicantAction(jobId: string, appli
 
 export async function createApplicationAction(data: CreateApplicationData, applicantId: string) {
   try {
-    // Check if user is an applicant
-    const { isApplicant } = await import('@/utils/auth');
-    const userIsApplicant = await isApplicant();
+    // Use server-side authentication
+    const { data: userProfile, error: profileError } = await getCurrentUserProfileServer();
     
-    if (!userIsApplicant) {
+    if (profileError || !userProfile) {
+      return { data: null, error: { message: 'User not authenticated' } };
+    }
+
+    // Check if user is an applicant
+    if (userProfile.user_type !== 'applicant') {
       return { data: null, error: { message: 'Unauthorized: Only applicants can apply for jobs' } };
+    }
+
+    // Verify the applicantId matches the authenticated user
+    if (userProfile.id !== applicantId) {
+      return { data: null, error: { message: 'Unauthorized: Invalid applicant ID' } };
     }
 
     const result = await ApplicationModel.create(data, applicantId)
@@ -53,12 +63,24 @@ export async function createApplicationAction(data: CreateApplicationData, appli
     }
     return result
   } catch (error) {
+    console.error('Error in createApplicationAction:', error);
     return { data: null, error: { message: 'Failed to create application' } }
   }
 }
 
 export async function updateApplicationAction(id: string, data: UpdateApplicationData) {
   try {
+    // Add authentication check for update as well
+    const { data: userProfile, error: profileError } = await getCurrentUserProfileServer();
+    
+    if (profileError || !userProfile) {
+      return { data: null, error: { message: 'User not authenticated' } };
+    }
+
+    if (userProfile.user_type !== 'applicant') {
+      return { data: null, error: { message: 'Unauthorized: Only applicants can update applications' } };
+    }
+
     const result = await ApplicationModel.update(id, data)
     if (result.data) {
       revalidatePath('/applicant/applications')
@@ -66,18 +88,31 @@ export async function updateApplicationAction(id: string, data: UpdateApplicatio
     }
     return result
   } catch (error) {
+    console.error('Error in updateApplicationAction:', error);
     return { data: null, error: { message: 'Failed to update application' } }
   }
 }
 
 export async function deleteApplicationAction(id: string) {
   try {
+    // Add authentication check for delete as well
+    const { data: userProfile, error: profileError } = await getCurrentUserProfileServer();
+    
+    if (profileError || !userProfile) {
+      return { error: { message: 'User not authenticated' } };
+    }
+
+    if (userProfile.user_type !== 'applicant') {
+      return { error: { message: 'Unauthorized: Only applicants can delete applications' } };
+    }
+
     const result = await ApplicationModel.delete(id)
     if (!result.error) {
       revalidatePath('/applicant/applications')
     }
     return result
   } catch (error) {
+    console.error('Error in deleteApplicationAction:', error);
     return { error: { message: 'Failed to delete application' } }
   }
 }

@@ -40,7 +40,13 @@ export default async function EditJobPage({ params }: EditJobPageProps) {
         <p className="text-gray-600">Update the job posting details below.</p>
       </div>
 
-      <EditJobForm job={job} countries={countries || []} />
+      <EditJobForm 
+        job={{
+          ...job,
+          work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
+        }} 
+        countries={countries || []} 
+      />
     </div>
   );
 } 

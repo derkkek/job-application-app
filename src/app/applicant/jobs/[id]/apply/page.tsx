@@ -13,7 +13,7 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
   const { id } = await params;
   
   // Get current user profile to get applicant ID
-const { data: userProfile, error: profileError } = await getCurrentUserProfileServer();
+  const { data: userProfile, error: profileError } = await getCurrentUserProfileServer();
   
   if (profileError || !userProfile) {
     console.log("profile error");
@@ -43,21 +43,21 @@ const { data: userProfile, error: profileError } = await getCurrentUserProfileSe
       ? existingApplicationData.updated_at.toISOString() 
       : existingApplicationData.updated_at,
     additional_expectations: existingApplicationData.additional_expectations ?? undefined,
-    job_application_experiences: existingApplicationData.job_application_experiences.map(exp => ({
+    job_application_experiences: existingApplicationData.job_application_experiences?.map(exp => ({
       ...exp,
       created_at: exp.created_at instanceof Date ? exp.created_at.toISOString() : exp.created_at,
       end_date: exp.end_date ?? undefined,
       summary: exp.summary ?? undefined,
-    }))
+    })) || []
   } : undefined;
 
   return (
     <ApplyJobForm 
       jobId={id}
       job={{
-          ...job,
-          work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
-        }}  
+        ...job,
+        work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
+      }}  
       countries={countries || []} 
       existingApplication={existingApplication}
       applicantId={userProfile.id}
