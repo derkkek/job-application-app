@@ -1,31 +1,31 @@
-// src/app/employer/jobs/page.tsx (Debug Version)
-import { Suspense } from "react";
+"use client";
+
+import { JobsListClient } from "@/components/organisms/jobs-list-client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { JobsListServer } from "@/components/organisms/jobs-list-server";
+import { useCurrentUser } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { LoadingSpinner } from "@/components/atoms/loading-spinner";
-import { getCurrentUserProfileServer } from "@/utils/auth-server";
-import { redirect } from "next/navigation";
 
-export default async function EmployerJobsPage() {
-  console.log('🔍 EmployerJobsPage: Starting authentication check...');
-  
-  // Get current user profile using server-side function
-  const { data: userProfile, error: profileError } = await getCurrentUserProfileServer();
-  
-  console.log('🔍 EmployerJobsPage: User profile result:', {
-    userProfile: userProfile ? { id: userProfile.id, user_type: userProfile.user_type } : null,
-    error: profileError
-  });
+export default function EmployerJobsPage() {
+  const router = useRouter();
+  const { data: userProfile, isLoading: isLoadingProfile, error: profileError } = useCurrentUser();
+
+  // Handle loading state
+  if (isLoadingProfile) {
+    return <LoadingSpinner size="lg" className="py-8" />;
+  }
 
   // If user is not authenticated, redirect to login
   if (profileError || !userProfile) {
-    redirect('/login');
+    router.push('/login');
+    return null;
   }
 
   // If user is not an employer, redirect to appropriate page
   if (userProfile.user_type !== 'employer') {
-    redirect('/applicant/jobs');
+    router.push('/applicant/jobs');
+    return null;
   }
 
   return (
@@ -38,9 +38,7 @@ export default async function EmployerJobsPage() {
         </Link>
       </div>
       
-      <Suspense fallback={<LoadingSpinner size="lg" className="py-8" />}>
-        <JobsListServer userType="employer" employerId={userProfile.id} />
-      </Suspense>
+      <JobsListClient userType="employer" />
     </div>
   );
 }

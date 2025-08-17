@@ -37,7 +37,13 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
             <Link href={`/employer/jobs/${id}/edit`}>
               <Button variant="outline">Update</Button>
             </Link>
-            <EmployerJobDetailsClient job={job} countries={countries || []} />
+            <EmployerJobDetailsClient 
+              job={{
+                ...job,
+                work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
+              }} 
+              countries={countries || []} 
+            />
           </div>
         </div>
       </div>

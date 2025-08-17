@@ -25,10 +25,25 @@ interface CreateJobFormProps {
 
 export function CreateJobForm({ countries }: CreateJobFormProps) {
   const router = useRouter();
-  const { data: user } = useCurrentUser();
+  const { data: user, isLoading: isLoadingUser, error: userError } = useCurrentUser();
+
+  // Handle loading state
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  // Handle authentication error
+  if (userError || !user) {
+    router.push('/login');
+    return null;
+  }
 
   // Prevent applicants from creating jobs
-  if (user?.user_type === 'applicant') {
+  if (user.user_type === 'applicant') {
     return (
       <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
         Applicants cannot create job postings. Please switch to an employer account if you wish to post jobs.
@@ -51,14 +66,19 @@ export function CreateJobForm({ countries }: CreateJobFormProps) {
     error: createJobError,
   } = useMutation({
     mutationFn: async (data: FormData) => {
-      // Get current user profile to determine employer ID
-      const { data: userProfile } = await fetch('/api/auth/profile').then(res => res.json());
+      // Double-check user is still authenticated and is an employer
+      const { getCurrentUserProfile } = await import('@/utils/auth');
+      const { data: currentUser, error: profileError } = await getCurrentUserProfile();
       
-      if (!userProfile) {
-        throw new Error('Failed to get user profile');
+      if (profileError || !currentUser) {
+        throw new Error('Please sign in to create a job');
       }
 
-      const response = await createJobAction(data, userProfile.id);
+      if (currentUser.user_type !== 'employer') {
+        throw new Error('Only employers can create jobs');
+      }
+
+      const response = await createJobAction(data, currentUser.id);
       if (response.error) {
         throw new Error(response.error.message || 'Failed to create job');
       }

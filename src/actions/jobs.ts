@@ -24,12 +24,20 @@ export async function getJobByIdAction(id: string) {
 
 export async function createJobAction(data: CreateJobData, employerId: string) {
   try {
-    // Check if user is an employer
-    const { isEmployer } = await import('@/utils/auth');
-    const userIsEmployer = await isEmployer();
+    // Check if user is an employer and matches the employerId
+    const { getCurrentUserProfile } = await import('@/utils/auth');
+    const { data: userProfile, error: profileError } = await getCurrentUserProfile();
     
-    if (!userIsEmployer) {
+    if (profileError || !userProfile) {
+      return { data: null, error: { message: 'User not authenticated' } };
+    }
+    
+    if (userProfile.user_type !== 'employer') {
       return { data: null, error: { message: 'Unauthorized: Only employers can create jobs' } };
+    }
+    
+    if (userProfile.id !== employerId) {
+      return { data: null, error: { message: 'Unauthorized: Invalid employer ID' } };
     }
 
     const result = await JobModel.create(data, employerId)
