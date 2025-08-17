@@ -66,19 +66,8 @@ export function CreateJobForm({ countries }: CreateJobFormProps) {
     error: createJobError,
   } = useMutation({
     mutationFn: async (data: FormData) => {
-      // Double-check user is still authenticated and is an employer
-      const { getCurrentUserProfile } = await import('@/utils/auth');
-      const { data: currentUser, error: profileError } = await getCurrentUserProfile();
-      
-      if (profileError || !currentUser) {
-        throw new Error('Please sign in to create a job');
-      }
-
-      if (currentUser.user_type !== 'employer') {
-        throw new Error('Only employers can create jobs');
-      }
-
-      const response = await createJobAction(data, currentUser.id);
+      // Server action will handle all the auth checks
+      const response = await createJobAction(data, user.id);
       if (response.error) {
         throw new Error(response.error.message || 'Failed to create job');
       }
