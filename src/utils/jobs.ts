@@ -131,19 +131,19 @@ export async function updateJob(id: string, jobData: UpdateJobData): Promise<{ d
   return { data, error };
 }
 
-export async function deleteJob(id: string): Promise<{ error: any }> {
+export async function deleteJob(id: string): Promise<{ data: undefined | null; error: any }> {
   const supabase = createClient();
   
   // Check if user is an employer
   const userIsEmployer = await isEmployer();
   if (!userIsEmployer) {
-    return { error: 'Only employers can delete job postings' };
+    return { data: null, error: 'Only employers can delete job postings' };
   }
   
   // Get current user
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) {
-    return { error: 'User not authenticated' };
+    return { data: null, error: 'User not authenticated' };
   }
 
   const { error } = await supabase
@@ -152,7 +152,11 @@ export async function deleteJob(id: string): Promise<{ error: any }> {
     .eq('id', id)
     .eq('employer_id', user.id); // Ensure user owns the job
 
-  return { error };
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: undefined, error: null };
 }
 
 export async function getCountries(): Promise<{ data: Country[] | null; error: any }> {

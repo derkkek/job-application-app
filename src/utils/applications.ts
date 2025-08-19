@@ -281,19 +281,19 @@ export async function updateApplication(id: string, applicationData: UpdateAppli
 }
 
 // Delete a job application
-export async function deleteApplication(id: string): Promise<{ error: any }> {
+export async function deleteApplication(id: string): Promise<{ data: undefined | null; error: any }> {
   const supabase = getFreshClient();
   
   // Check if user is an applicant
   const userIsApplicant = await isApplicant();
   if (!userIsApplicant) {
-    return { error: 'Only applicants can delete job applications' };
+    return { data: null, error: 'Only applicants can delete job applications' };
   }
   
   // Get current user
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) {
-    return { error: 'User not authenticated' };
+    return { data: null, error: 'User not authenticated' };
   }
 
   const { error } = await supabase
@@ -302,7 +302,11 @@ export async function deleteApplication(id: string): Promise<{ error: any }> {
     .eq('id', id)
     .eq('applicant_id', user.id); // Ensure user owns the application
 
-  return { error };
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: undefined, error: null };
 }
 
 // Create an experience
@@ -339,7 +343,7 @@ export async function updateExperience(experienceData: UpdateExperienceData): Pr
 }
 
 // Delete an experience
-export async function deleteExperience(id: string): Promise<{ error: any }> {
+export async function deleteExperience(id: string): Promise<{ data: undefined | null; error: any }> {
   const supabase = getFreshClient();
   
   const { error } = await supabase
@@ -347,7 +351,11 @@ export async function deleteExperience(id: string): Promise<{ error: any }> {
     .delete()
     .eq('id', id);
 
-  return { error };
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data: undefined, error: null };
 } 
 
 // Get applicants for employer's job postings

@@ -1,4 +1,3 @@
-import { getCurrentUserProfile } from "@/utils/auth";
 import { SettingsClient } from "@/components/organisms/settings-client";
 import { redirect } from "next/navigation";
 import { getCurrentUserProfileServer } from "@/utils/auth-server";

@@ -1,8 +1,8 @@
 'use server'
 
-import { JobModel } from '@/lib/actions/job'
+import { prisma } from '@/utils/database'
 import { revalidatePath } from 'next/cache'
-import { ServerResponse, createServerAction } from '@/lib/models/server'
+import { ServerResponse } from '@/lib/models/server'
 import type { CreateJobData, UpdateJobData, Job, Country } from '@/lib/models/job'
 import { getCurrentUserProfileServer } from '@/utils/auth-server'
 
@@ -10,65 +10,149 @@ export async function getJobsAction(
   userType?: "employer" | "applicant", 
   employerId?: string
 ): Promise<ServerResponse<Job[]>> {
-  return createServerAction(async () => {
+  try {
     // 1. Input validation
     if (userType && !['employer', 'applicant'].includes(userType)) {
       throw new Error('Invalid user type');
     }
     
     // 2. Business logic
-    const result = await JobModel.getAll(userType, employerId);
-    if (result.error) {
-      throw new Error(result.error.message || 'Failed to fetch jobs');
-    }
+    let where: any = {}
     
+    if (userType === "employer" && employerId) {
+      where.employer_id = employerId
+    } else if (userType === "applicant") {
+      where.is_published = true
+    }
+
+    const jobs = await prisma.job_postings.findMany({
+      where,
+      include: {
+        country: true,
+        employer: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: { created_at: 'desc' }
+    })
+
     // Transform data to match Job interface
-    const transformedData = (result.data || []).map((job: any) => ({
+    const transformedData = jobs.map((job: any) => ({
       ...job,
       work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
     }));
     
-    return transformedData;
-  });
+    // 3. Return successful response
+    return {
+      success: true,
+      data: transformedData,
+      status: 200
+    };
+  } catch (error: any) {
+    // 4. Error handling
+    console.error('Server action failed:', error);
+    
+    // Handle Prisma errors
+    if (error.code?.startsWith('P')) {
+      if (error.code === 'P2025') {
+        return {
+          success: false,
+          error: 'Jobs not found',
+          status: 404
+        };
+      }
+    }
+    
+    // Default error response
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch jobs',
+      status: 500
+    };
+  }
 }
 
 export async function getJobByIdAction(
   id: string
 ): Promise<ServerResponse<Job | null>> {
-  return createServerAction(async () => {
+  try {
     // 1. Input validation
     if (!id || typeof id !== 'string') {
       throw new Error('Job ID is required');
     }
     
     // 2. Business logic
-    const result = await JobModel.getById(id);
-    if (result.error) {
+    const job = await prisma.job_postings.findUnique({
+      where: { id },
+      include: {
+        country: true,
+        employer: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    if (!job) {
       // Instead of throwing, return null to indicate job not found
-      console.log(`Job ${id} not found:`, result.error.message);
-      return null;
-    }
-    
-    if (!result.data) {
       console.log(`Job ${id} not found: No data returned`);
-      return null;
+      return {
+        success: true,
+        data: null,
+        status: 200
+      };
     }
     
     // Transform data to match Job interface
     const transformedData = {
-      ...result.data,
-      work_location: (result.data as any).work_location as 'onsite' | 'remote' | 'hybrid'
+      ...job,
+      work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
     };
     
-    return transformedData;
-  });
+    // 3. Return successful response
+    return {
+      success: true,
+      data: transformedData,
+      status: 200
+    };
+  } catch (error: any) {
+    // 4. Error handling
+    console.error('Server action failed:', error);
+    
+    // Handle Prisma errors
+    if (error.code?.startsWith('P')) {
+      if (error.code === 'P2025') {
+        return {
+          success: false,
+          error: 'Job not found',
+          status: 404
+        };
+      }
+    }
+    
+    // Default error response
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch job',
+      status: 500
+    };
+  }
 }
 
 export async function createJobAction(
   data: CreateJobData, 
   employerId: string
 ): Promise<ServerResponse<Job>> {
-  return createServerAction(async () => {
+  try {
     // 1. Input validation
     if (!data || !employerId) {
       throw new Error('Job data and employer ID are required');
@@ -94,31 +178,70 @@ export async function createJobAction(
     }
 
     // 2. Business logic
-    const result = await JobModel.create(data, employerId);
-    if (result.error) {
-      throw new Error(result.error.message || 'Failed to create job');
-    }
+    const job = await prisma.job_postings.create({
+      data: {
+        ...data,
+        employer_id: employerId,
+        is_published: true
+      },
+      include: {
+        country: true
+      }
+    })
     
     // 3. Revalidate paths for fresh data
-    if (result.data) {
+    if (job) {
       revalidatePath('/employer/jobs');
     }
     
     // Transform data to match Job interface
     const transformedData = {
-      ...result.data!,
-      work_location: (result.data as any).work_location as 'onsite' | 'remote' | 'hybrid'
+      ...job,
+      work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
     };
     
-    return transformedData;
-  });
+    // 3. Return successful response
+    return {
+      success: true,
+      data: transformedData,
+      status: 201
+    };
+  } catch (error: any) {
+    // 4. Error handling
+    console.error('Server action failed:', error);
+    
+    // Handle Prisma errors
+    if (error.code?.startsWith('P')) {
+      if (error.code === 'P2002') {
+        return {
+          success: false,
+          error: 'Job with this title already exists',
+          status: 409
+        };
+      }
+      if (error.code === 'P2025') {
+        return {
+          success: false,
+          error: 'Country not found',
+          status: 404
+        };
+      }
+    }
+    
+    // Default error response
+    return {
+      success: false,
+      error: error.message || 'Failed to create job',
+      status: 500
+    };
+  }
 }
 
 export async function updateJobAction(
   id: string, 
   data: UpdateJobData
 ): Promise<ServerResponse<Job>> {
-  return createServerAction(async () => {
+  try {
     // 1. Input validation
     if (!id || typeof id !== 'string') {
       throw new Error('Job ID is required');
@@ -129,59 +252,138 @@ export async function updateJobAction(
     }
     
     // 2. Business logic
-    const result = await JobModel.update(id, data);
-    if (result.error) {
-      throw new Error(result.error.message || 'Failed to update job');
-    }
+    const job = await prisma.job_postings.update({
+      where: { id },
+      data,
+      include: {
+        country: true
+      }
+    })
     
     // 3. Revalidate paths for fresh data
-    if (result.data) {
+    if (job) {
       revalidatePath('/employer/jobs');
       revalidatePath(`/employer/jobs/${id}`);
     }
     
     // Transform data to match Job interface
     const transformedData = {
-      ...result.data!,
-      work_location: (result.data as any).work_location as 'onsite' | 'remote' | 'hybrid'
+      ...job,
+      work_location: job.work_location as 'onsite' | 'remote' | 'hybrid'
     };
     
-    return transformedData;
-  });
+    // 3. Return successful response
+    return {
+      success: true,
+      data: transformedData,
+      status: 200
+    };
+  } catch (error: any) {
+    // 4. Error handling
+    console.error('Server action failed:', error);
+    
+    // Handle Prisma errors
+    if (error.code?.startsWith('P')) {
+      if (error.code === 'P2025') {
+        return {
+          success: false,
+          error: 'Job not found',
+          status: 404
+        };
+      }
+    }
+    
+    // Default error response
+    return {
+      success: false,
+      error: error.message || 'Failed to update job',
+      status: 500
+    };
+  }
 }
 
 export async function deleteJobAction(
   id: string
 ): Promise<ServerResponse<void>> {
-  return createServerAction(async () => {
+  try {
     // 1. Input validation
     if (!id || typeof id !== 'string') {
       throw new Error('Job ID is required');
     }
     
     // 2. Business logic
-    const result = await JobModel.delete(id);
-    if (result.error) {
-      throw new Error(result.error.message || 'Failed to delete job');
-    }
+    await prisma.job_postings.delete({
+      where: { id }
+    })
     
     // 3. Revalidate paths for fresh data
     revalidatePath('/employer/jobs');
     
-    return undefined;
-  });
+    // 3. Return successful response
+    return {
+      success: true,
+      data: undefined,
+      status: 200
+    };
+  } catch (error: any) {
+    // 4. Error handling
+    console.error('Server action failed:', error);
+    
+    // Handle Prisma errors
+    if (error.code?.startsWith('P')) {
+      if (error.code === 'P2025') {
+        return {
+          success: false,
+          error: 'Job not found',
+          status: 404
+        };
+      }
+    }
+    
+    // Default error response
+    return {
+      success: false,
+      error: error.message || 'Failed to delete job',
+      status: 500
+    };
+  }
 }
 
 export async function getCountriesAction(): Promise<ServerResponse<Country[]>> {
-  return createServerAction(async () => {
+  try {
     // 1. Input validation - no parameters needed
     
     // 2. Business logic
-    const result = await JobModel.getCountries();
-    if (result.error) {
-      throw new Error(result.error.message || 'Failed to fetch countries');
+    const countries = await prisma.countries.findMany({
+      orderBy: { name: 'asc' }
+    })
+    
+    // 3. Return successful response
+    return {
+      success: true,
+      data: countries || [],
+      status: 200
+    };
+  } catch (error: any) {
+    // 4. Error handling
+    console.error('Server action failed:', error);
+    
+    // Handle Prisma errors
+    if (error.code?.startsWith('P')) {
+      if (error.code === 'P2025') {
+        return {
+          success: false,
+          error: 'Countries not found',
+          status: 404
+        };
+      }
     }
     
-    return result.data || [];
-  });
+    // Default error response
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch countries',
+      status: 500
+    };
+  }
 }

@@ -1,7 +1,8 @@
 // src/app/api/auth/profile/route.ts (Debug Version)
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { UserModel } from '@/lib/actions/user';
+import { prisma } from '@/utils/database';
+import type { UserProfile } from '@/lib/models/user';
 
 export async function GET() {
   
@@ -23,13 +24,34 @@ export async function GET() {
     }
 
     // Get user profile from Prisma
-    const result = await UserModel.getById(user.id);
-    console.log('🔍 API Profile: Database result:', {
-      data: result.data ? { id: result.data.id, user_type: result.data.user_type } : null,
-      error: result.error
+    const profile = await prisma.profiles.findUnique({
+      where: { id: user.id }
     });
     
-    return NextResponse.json(result);
+    if (!profile) {
+      return NextResponse.json(
+        { data: null, error: { message: 'User profile not found' } },
+        { status: 404 }
+      );
+    }
+
+    // Transform the data to match UserProfile interface
+    const userProfile: UserProfile = {
+      id: profile.id,
+      email: profile.email,
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      user_type: profile.user_type as 'employer' | 'applicant',
+      created_at: profile.created_at.toISOString(),
+      updated_at: profile.updated_at.toISOString()
+    };
+
+    console.log('🔍 API Profile: Database result:', {
+      data: { id: userProfile.id, user_type: userProfile.user_type },
+      error: null
+    });
+    
+    return NextResponse.json({ data: userProfile, error: null });
   } catch (error) {
     console.error('❌ API Profile: Unexpected error:', error);
     return NextResponse.json(

@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { getApplicationsAction } from "@/lib/actions/applications-server";
 import { ApplicationsListClient } from "@/components/organisms/applications-list-client";
 import { LoadingSpinner } from "@/components/atoms/loading-spinner";
-import { getCurrentUserProfile } from "@/utils/auth";
 import { getCurrentUserProfileServer } from "@/utils/auth-server";
 
 export default async function ApplicantApplicationsPage() {

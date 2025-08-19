@@ -1,10 +1,10 @@
-import { getCurrentUserProfile } from "@/utils/auth";
+import { getCurrentUserProfileServer } from "@/utils/auth-server";
 import { SettingsClient } from "@/components/organisms/settings-client";
 import { redirect } from "next/navigation";
 
 export default async function ApplicantSettingsPage() {
   // Get current user profile server-side
-  const { data: userProfile, error } = await getCurrentUserProfile();
+  const { data: userProfile, error } = await getCurrentUserProfileServer();
   
   if (error || !userProfile) {
     redirect('/login');

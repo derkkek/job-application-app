@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
-import { UserModel } from '@/lib/actions/user';
+import { prisma } from '@/utils/database';
 import type { UserProfile } from '@/lib/models/user';
 
 export async function getCurrentUserProfileServer(): Promise<{ data: UserProfile | null; error: any }> {
@@ -20,13 +20,31 @@ export async function getCurrentUserProfileServer(): Promise<{ data: UserProfile
 
     // Get user profile from Prisma
     console.log('🔍 getCurrentUserProfileServer: Fetching profile from database...');
-    const result = await UserModel.getById(user.id);
-    console.log('🔍 getCurrentUserProfileServer: Database result:', {
-      data: result.data ? { id: result.data.id, user_type: result.data.user_type } : null,
-      error: result.error
+    const profile = await prisma.profiles.findUnique({
+      where: { id: user.id }
     });
     
-    return result;
+    if (!profile) {
+      return { data: null, error: { message: 'User profile not found' } };
+    }
+
+    // Transform the data to match UserProfile interface
+    const userProfile: UserProfile = {
+      id: profile.id,
+      email: profile.email,
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      user_type: profile.user_type as 'employer' | 'applicant',
+      created_at: profile.created_at.toISOString(),
+      updated_at: profile.updated_at.toISOString()
+    };
+
+    console.log('🔍 getCurrentUserProfileServer: Database result:', {
+      data: { id: userProfile.id, user_type: userProfile.user_type },
+      error: null
+    });
+    
+    return { data: userProfile, error: null };
   } catch (error) {
     console.error('❌ getCurrentUserProfileServer: Unexpected error:', error);
     return { data: null, error: 'Server error' };
