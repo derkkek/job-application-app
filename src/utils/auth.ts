@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/client';
-import { UserModel } from '@/models/user';
+import { UserModel } from '@/lib/actions/user';
 
 export interface UserProfile {
   id: string;

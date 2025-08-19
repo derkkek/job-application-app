@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
-import { Job } from '@/types/job';
+import { Job } from '@/lib/models/job';
 
 // Server-side function to get jobs (for server components only)
 export async function getJobsServer(userType?: "employer" | "applicant"): Promise<{ data: Job[] | null; error: any }> {

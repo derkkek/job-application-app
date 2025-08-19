@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { createJobAction } from "@/actions/jobs";
-import { Country } from "@/types/job";
+import { Country } from "@/lib/models/job";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-auth";

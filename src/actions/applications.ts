@@ -1,6 +1,6 @@
 'use server'
 
-import { ApplicationModel } from '@/models/application'
+import { ApplicationModel } from '@/lib/actions/application'
 import { revalidatePath } from 'next/cache'
 import { getCurrentUserProfileServer } from '@/utils/auth-server' // Use server-side auth
 import type { 
@@ -8,7 +8,7 @@ import type {
   UpdateApplicationData,
   CreateExperienceData,
   UpdateExperienceData
-} from '@/types/application'
+} from '@/lib/models/application'
 
 export async function getApplicationsAction(userType?: "employer" | "applicant", userId?: string) {
   try {

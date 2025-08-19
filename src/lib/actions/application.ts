@@ -7,7 +7,7 @@ import type {
   CreateExperienceData,
   UpdateExperienceData,
   ApplicationWithExperiences
-} from '@/types/application'
+} from '@/lib/models/application'
 
 export class ApplicationModel {
   // Get all applications with optional filtering

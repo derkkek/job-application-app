@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { deleteApplicationAction } from "@/actions/applications";
-import { ApplicationWithExperiences } from "@/types/application";
+import { ApplicationWithExperiences } from "@/lib/models/application";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCurrency, formatDate } from "@/lib/utils";

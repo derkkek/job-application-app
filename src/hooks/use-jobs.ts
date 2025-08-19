@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getJobs, getJobById, createJob, updateJob, deleteJob } from "@/utils/jobs";
-import { Job, CreateJobData, UpdateJobData } from "@/types/job";
+import { Job, CreateJobData, UpdateJobData } from "@/lib/models/job";
 
 // Query keys
 export const jobKeys = {

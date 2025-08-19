@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getApplications, getApplicationById, createApplication, updateApplication } from "@/utils/applications";
-import { JobApplication, CreateApplicationData, UpdateApplicationData } from "@/types/application";
+import { JobApplication, CreateApplicationData, UpdateApplicationData } from "@/lib/models/application";
 
 // Query keys
 export const applicationKeys = {

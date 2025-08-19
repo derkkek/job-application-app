@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/client';
-import { Job, CreateJobData, UpdateJobData, Country } from '@/types/job';
+import { Job, CreateJobData, UpdateJobData, Country } from '@/lib/models/job';
 import { isEmployer } from '@/utils/auth';
 
 // Unified function to get jobs based on user type

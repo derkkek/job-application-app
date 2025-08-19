@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getJobsAction } from "@/actions/jobs";
 import { JobsListClient } from "@/components/organisms/jobs-list-client";
 import { JobCardSkeleton } from "@/components/atoms/loading-skeleton";
-import type { Job } from "@/types/job";
+import type { Job } from "@/lib/models/job";
 
 interface JobsListServerProps {
   userType?: "employer" | "applicant";

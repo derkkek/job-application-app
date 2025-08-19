@@ -1,9 +1,9 @@
 'use server'
 
-import { JobModel } from '@/models/job'
+import { JobModel } from '@/lib/actions/job'
 import { revalidatePath } from 'next/cache'
-import type { CreateJobData, UpdateJobData } from '@/types/job'
-import { getCurrentUserProfileServer } from '@/utils/auth-server' // ✅ Use server-side version
+import type { CreateJobData, UpdateJobData } from '@/lib/models/job'
+import { getCurrentUserProfileServer } from '@/utils/auth-server'
 
 export async function getJobsAction(userType?: "employer" | "applicant", employerId?: string) {
   try {

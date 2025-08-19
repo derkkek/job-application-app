@@ -7,7 +7,7 @@ import {
   CreateExperienceData,
   UpdateExperienceData,
   ApplicationWithExperiences
-} from '@/types/application';
+} from '@/lib/models/application';
 import { isApplicant, isEmployer } from '@/utils/auth';
 
 // Clear any cached queries and create a fresh client

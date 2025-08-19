@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
-import { UserModel } from '@/models/user';
-import type { UserProfile } from '@/types/user';
+import { UserModel } from '@/lib/actions/user';
+import type { UserProfile } from '@/lib/models/user';
 
 export async function getCurrentUserProfileServer(): Promise<{ data: UserProfile | null; error: any }> {
   

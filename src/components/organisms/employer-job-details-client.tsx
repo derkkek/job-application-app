@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { deleteJobAction } from "@/actions/jobs";
 import { useRouter } from "next/navigation";
-import type { Job, Country } from "@/types/job";
+import type { Job, Country } from "@/lib/models/job";
 
 interface EmployerJobDetailsClientProps {
   job: Job;

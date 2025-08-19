@@ -1,5 +1,5 @@
 import { prisma, handlePrismaError } from '@/utils/database'
-import type { UserProfile } from '@/types/user'
+import type { UserProfile } from '@/lib/models/user'
 
 export class UserModel {
   // Get user profile by ID

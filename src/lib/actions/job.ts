@@ -1,5 +1,5 @@
 import { prisma, handlePrismaError } from '@/utils/database'
-import type { Job, CreateJobData, UpdateJobData, Country } from '@/types/job'
+import type { Job, CreateJobData, UpdateJobData, Country } from '@/lib/models/job'
 
 export class JobModel {
   // Get all jobs with optional filtering

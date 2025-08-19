@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import type { Job, Country } from "@/types/job";
+import type { Job, Country } from "@/lib/models/job";
 
 interface JobDetailsClientProps {
   job: Job;

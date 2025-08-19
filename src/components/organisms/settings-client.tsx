@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useSignOut } from "@/hooks/use-auth";
-import type { UserProfile } from "@/types/user";
+import type { UserProfile } from "@/lib/models/user";
 
 interface SettingsClientProps {
   userProfile: UserProfile;

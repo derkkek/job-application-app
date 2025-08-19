@@ -6,7 +6,6 @@ export default async function CreateJobPage() {
   const { data: countries, error: countriesError } = await getCountriesAction();
   
   if (countriesError) {
-    console.log("any dime fcken countrşies outheer maane.")
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="mb-6">

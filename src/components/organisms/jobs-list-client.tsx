@@ -2,22 +2,17 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useDeleteJob, useJobs } from "@/hooks/use-jobs";
+import { useDeleteJob } from "@/hooks/use-jobs";
 import { Trash2, Edit, Eye } from "lucide-react";
 import { formatCurrency, getWorkLocationDisplay } from "@/lib/utils";
-import { LoadingSpinner } from "@/components/atoms/loading-spinner";
+import type { Job } from "@/lib/models/job";
 
 interface JobsListClientProps {
+  jobs: Job[];
   userType?: "employer" | "applicant";
 }
 
-export function JobsListClient({ userType }: JobsListClientProps) {
-  const {
-    data: jobsResult,
-    isLoading: isLoadingJobs,
-    error: jobsError
-  } = useJobs(userType);
-
+export function JobsListClient({ jobs, userType }: JobsListClientProps) {
   const {
     mutate: serverDeleteJob,
     isPending: isLoadingDeleteJob,
@@ -29,20 +24,6 @@ export function JobsListClient({ userType }: JobsListClientProps) {
       serverDeleteJob(id);
     }
   };
-
-  if (isLoadingJobs) {
-    return <LoadingSpinner size="lg" className="py-8" />;
-  }
-
-  if (jobsError) {
-    return (
-      <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
-        Failed to load jobs. Please try again later.
-      </div>
-    );
-  }
-
-  const jobs = jobsResult?.data || [];
 
   if (jobs.length === 0) {
     return (
@@ -129,4 +110,4 @@ export function JobsListClient({ userType }: JobsListClientProps) {
       ))}
     </div>
   );
-} 
+}
