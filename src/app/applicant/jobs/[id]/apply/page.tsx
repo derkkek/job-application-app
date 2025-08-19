@@ -1,5 +1,5 @@
-import { getJobByIdAction, getCountriesAction } from "@/actions/jobs";
-import { getApplicationByJobAndApplicantAction } from "@/actions/applications";
+import { getJobByIdAction, getCountriesAction } from "@/lib/actions/jobs-server";
+import { getApplicationByJobAndApplicantAction } from "@/lib/actions/applications-server";
 import { getCurrentUserProfileServer } from "@/utils/auth-server";
 import { ApplyJobForm } from "@/components/organisms/apply-job-form";
 import { notFound } from "next/navigation";
@@ -21,31 +21,35 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
   }
 
   // Fetch job data server-side
-  const { data: job, error: jobError } = await getJobByIdAction(id);
+  const jobResult = await getJobByIdAction(id);
   
-  if (jobError || !job) {
+  if (!jobResult.success || !jobResult.data) {
     notFound();
   }
 
+  const job = jobResult.data;
+
   // Fetch countries for the client component
-  const { data: countries } = await getCountriesAction();
+  const countriesResult = await getCountriesAction();
+  const countries = countriesResult.success ? countriesResult.data : [];
 
   // Check if application already exists
-  const { data: existingApplicationData } = await getApplicationByJobAndApplicantAction(id, userProfile.id);
+  const applicationResult = await getApplicationByJobAndApplicantAction(id, userProfile.id);
+  const existingApplicationData = applicationResult.success ? applicationResult.data : null;
 
   // Convert null values to undefined and Date objects to strings to match the expected type
   const existingApplication = existingApplicationData ? {
     ...existingApplicationData,
-    created_at: existingApplicationData.created_at instanceof Date 
-      ? existingApplicationData.created_at.toISOString() 
-      : existingApplicationData.created_at,
-    updated_at: existingApplicationData.updated_at instanceof Date 
-      ? existingApplicationData.updated_at.toISOString() 
-      : existingApplicationData.updated_at,
+    created_at: typeof existingApplicationData.created_at === 'object' && existingApplicationData.created_at !== null 
+      ? (existingApplicationData.created_at as Date).toISOString() 
+      : existingApplicationData.created_at as string,
+    updated_at: typeof existingApplicationData.updated_at === 'object' && existingApplicationData.updated_at !== null 
+      ? (existingApplicationData.updated_at as Date).toISOString() 
+      : existingApplicationData.updated_at as string,
     additional_expectations: existingApplicationData.additional_expectations ?? undefined,
-    job_application_experiences: existingApplicationData.job_application_experiences?.map(exp => ({
+    job_application_experiences: existingApplicationData.experiences?.map((exp: any) => ({
       ...exp,
-      created_at: exp.created_at instanceof Date ? exp.created_at.toISOString() : exp.created_at,
+      created_at: typeof exp.created_at === 'object' && exp.created_at !== null ? (exp.created_at as Date).toISOString() : exp.created_at,
       end_date: exp.end_date ?? undefined,
       summary: exp.summary ?? undefined,
     })) || []

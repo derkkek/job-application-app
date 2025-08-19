@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { createJobAction } from "@/actions/jobs";
+import { createJobAction } from "@/lib/actions/jobs-server";
 import { Country } from "@/lib/models/job";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
@@ -68,8 +68,8 @@ export function CreateJobForm({ countries }: CreateJobFormProps) {
     mutationFn: async (data: FormData) => {
       // Server action will handle all the auth checks
       const response = await createJobAction(data, user.id);
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to create job');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to create job');
       }
       return response.data;
     },

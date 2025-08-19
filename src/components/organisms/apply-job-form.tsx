@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { createApplicationAction, updateApplicationAction, deleteApplicationAction, createExperienceAction, updateExperienceAction, deleteExperienceAction } from "@/actions/applications";
+import { createApplicationAction, updateApplicationAction, deleteApplicationAction, createExperienceAction, updateExperienceAction, deleteExperienceAction } from "@/lib/actions/applications-server";
 import { Country } from "@/lib/models/job";
 import { JobApplicationExperience } from "@/lib/models/application";
 import { useRouter } from "next/navigation";
@@ -155,13 +155,13 @@ export function ApplyJobForm({ jobId, job, countries, existingApplication, appli
       if (existingApplication) {
         // Update existing application
         const { experiences, ...applicationData } = data;
-        const { error: appError } = await updateApplicationAction(existingApplication.id, {
+        const result = await updateApplicationAction(existingApplication.id, {
           id: existingApplication.id,
           ...applicationData,
         });
 
-        if (appError) {
-          setError(appError.message || "Failed to update application");
+        if (!result.success) {
+          setError(result.error || "Failed to update application");
           setIsSubmitting(false);
           return;
         }
@@ -198,16 +198,18 @@ export function ApplyJobForm({ jobId, job, countries, existingApplication, appli
       } else {
         // Create new application
         const { experiences, ...applicationData } = data;
-        const { data: newApp, error: appError } = await createApplicationAction({
+        const result = await createApplicationAction({
           job_id: jobId,
           ...applicationData,
         }, applicantId);
 
-        if (appError) {
-          setError(appError.message || "Failed to create application");
+        if (!result.success) {
+          setError(result.error || "Failed to create application");
           setIsSubmitting(false);
           return;
         }
+
+        const newApp = result.data;
 
         // Create experiences
         for (const experience of data.experiences) {
@@ -232,10 +234,10 @@ export function ApplyJobForm({ jobId, job, countries, existingApplication, appli
     if (!confirm("Are you sure you want to delete this application?")) return;
 
     setIsSubmitting(true);
-    const { error } = await deleteApplicationAction(existingApplication.id);
+    const result = await deleteApplicationAction(existingApplication.id);
     
-    if (error) {
-      setError(error.message || "Failed to delete application");
+    if (!result.success) {
+      setError(result.error || "Failed to delete application");
     } else {
       router.push("/applicant/applications");
     }

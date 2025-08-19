@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getJobsAction } from "@/actions/jobs";
+import { getJobsAction } from "@/lib/actions/jobs-server";
 import { JobsListClient } from "@/components/organisms/jobs-list-client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -42,15 +42,17 @@ export default async function EmployerJobsPage() {
 
 // Server component for jobs list
 async function JobsListServer({ userType, employerId }: { userType: "employer" | "applicant", employerId?: string }) {
-  const { data: jobs, error } = await getJobsAction(userType, employerId);
+  const result = await getJobsAction(userType, employerId);
 
-  if (error) {
+  if (!result.success) {
     return (
       <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
-        Failed to load jobs. Please try again later.
+        {result.error || 'Failed to load jobs. Please try again later.'}
       </div>
     );
   }
+
+  const jobs = result.data;
 
   if (!jobs || jobs.length === 0) {
     return (

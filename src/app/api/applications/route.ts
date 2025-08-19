@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getApplicationsAction } from '@/actions/applications';
+import { getApplicationsAction } from '@/lib/actions/applications-server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,11 +16,14 @@ export async function GET(request: NextRequest) {
 
     const result = await getApplicationsAction(userType, userId);
     
-    if (result.error) {
-      return NextResponse.json(result, { status: 400 });
+    if (!result.success) {
+      return NextResponse.json(
+        { error: { message: result.error } }, 
+        { status: result.status }
+      );
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ data: result.data });
   } catch (error) {
     return NextResponse.json(
       { error: { message: 'Internal server error' } },

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getApplicationsAction } from "@/actions/applications";
+import { getApplicationsAction } from "@/lib/actions/applications-server";
 import { ApplicationsListClient } from "@/components/organisms/applications-list-client";
 import { LoadingSpinner } from "@/components/atoms/loading-spinner";
 import { getCurrentUserProfile } from "@/utils/auth";

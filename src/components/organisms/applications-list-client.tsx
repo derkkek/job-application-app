@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { deleteApplicationAction } from "@/actions/applications";
+import { deleteApplicationAction } from "@/lib/actions/applications-server";
 import { ApplicationWithExperiences } from "@/lib/models/application";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -44,9 +44,9 @@ export function ApplicationsListClient({ userType, userId }: ApplicationsListCli
     
     setLoading(true);
     try {
-      const { error } = await deleteApplicationAction(id);
-      if (error) {
-        setError(error.message || "Failed to delete application");
+      const result = await deleteApplicationAction(id);
+      if (!result.success) {
+        setError(result.error || "Failed to delete application");
       } else {
         setApplications(applications.filter(app => app.id !== id));
       }

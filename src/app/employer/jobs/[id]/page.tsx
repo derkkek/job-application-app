@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { getJobByIdAction, getCountriesAction } from "@/actions/jobs";
+import { getJobByIdAction, getCountriesAction } from "@/lib/actions/jobs-server";
 import { EmployerJobDetailsClient } from "@/components/organisms/employer-job-details-client";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,14 +13,17 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   const { id } = await params;
   
   // Fetch job data server-side
-  const { data: job, error: jobError } = await getJobByIdAction(id);
+  const jobResult = await getJobByIdAction(id);
   
-  if (jobError || !job) {
+  if (!jobResult.success || !jobResult.data) {
     notFound();
   }
 
+  const job = jobResult.data;
+
   // Fetch countries for the client component
-  const { data: countries } = await getCountriesAction();
+  const countriesResult = await getCountriesAction();
+  const countries = countriesResult.success ? countriesResult.data : [];
 
   return (
     <div className="max-w-4xl mx-auto p-6">

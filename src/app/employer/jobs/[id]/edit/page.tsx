@@ -1,4 +1,4 @@
-import { getJobByIdAction, getCountriesAction } from "@/actions/jobs";
+import { getJobByIdAction, getCountriesAction } from "@/lib/actions/jobs-server";
 import { EditJobForm } from "@/components/organisms/edit-job-form";
 import { notFound } from "next/navigation";
 
@@ -10,16 +10,19 @@ export default async function EditJobPage({ params }: EditJobPageProps) {
   const { id } = await params;
   
   // Fetch job data server-side
-  const { data: job, error: jobError } = await getJobByIdAction(id);
+  const jobResult = await getJobByIdAction(id);
   
-  if (jobError || !job) {
+  if (!jobResult.success || !jobResult.data) {
     notFound();
   }
 
+  const job = jobResult.data;
+
   // Fetch countries for the client component
-  const { data: countries, error: countriesError } = await getCountriesAction();
+  const countriesResult = await getCountriesAction();
+  const countries = countriesResult.success ? countriesResult.data : [];
   
-  if (countriesError) {
+  if (!countriesResult.success) {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="mb-6">

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { updateJobAction } from "@/actions/jobs";
+import { updateJobAction } from "@/lib/actions/jobs-server";
 import { Job, Country } from "@/lib/models/job";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
@@ -50,8 +50,8 @@ export function EditJobForm({ job, countries }: EditJobFormProps) {
         id: job.id,
         ...data,
       });
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to update job');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to update job');
       }
       return response.data;
     },

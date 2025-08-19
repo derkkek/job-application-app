@@ -1,11 +1,11 @@
-import { getCountriesAction } from "@/actions/jobs";
+import { getCountriesAction } from "@/lib/actions/jobs-server";
 import { CreateJobForm } from "@/components/organisms/create-job-form";
 
 export default async function CreateJobPage() {
   // Fetch countries server-side
-  const { data: countries, error: countriesError } = await getCountriesAction();
+  const countriesResult = await getCountriesAction();
   
-  if (countriesError) {
+  if (!countriesResult.success) {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="mb-6">
@@ -18,6 +18,8 @@ export default async function CreateJobPage() {
       </div>
     );
   }
+
+  const countries = countriesResult.data;
 
   return (
     <div className="max-w-2xl mx-auto p-6">

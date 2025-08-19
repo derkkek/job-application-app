@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { deleteJobAction } from "@/actions/jobs";
+import { deleteJobAction } from "@/lib/actions/jobs-server";
 import { useRouter } from "next/navigation";
 import type { Job, Country } from "@/lib/models/job";
 
@@ -20,15 +20,16 @@ export function EmployerJobDetailsClient({ job, countries }: EmployerJobDetailsC
     
     setIsDeleting(true);
     try {
-      const { error } = await deleteJobAction(job.id);
-      if (error) {
-        alert(error.message || "Failed to delete job");
+      const result = await deleteJobAction(job.id);
+      if (!result.success) {
+        alert(result.error || "Failed to delete job");
+        setIsDeleting(false);
       } else {
-        router.push("/employer/jobs");
+        // Use window.location for immediate navigation to avoid race conditions
+        window.location.href = "/employer/jobs";
       }
     } catch (err) {
       alert("Failed to delete job");
-    } finally {
       setIsDeleting(false);
     }
   };
